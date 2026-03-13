@@ -1,0 +1,125 @@
+mqtt:
+  enabled: true
+  host: mqtt
+  port: 1883
+  user: ''
+  password: ''
+  topic_prefix: frigate
+
+lpr:
+  enabled: True
+
+go2rtc:
+  streams:
+    usbCam:
+      - 'ffmpeg:device?video=/dev/video0&input_format=mjpeg&video_size=1920x1080&framerate=15&quality=100#video=h264#hardware'
+
+objects:
+  track:
+    - person
+    - car
+
+cameras:
+  usb_webcam: # Название для USB-камеры
+    enabled: true
+    ffmpeg:
+      # ВАЖНО: Отключаем аппаратное ускорение ДЛЯ ЭТОЙ КАМЕРЫ,
+      # так как USB-камеры обычно его не поддерживают [citation:1]
+      hwaccel_args: ' '
+      inputs:
+        - path: rtsp://host.docker.internal:8554/usbCam
+          roles:
+            - detect # Для обнаружения объектов
+            - record # Для записи (если нужно)
+    detect:
+      enabled: true
+      width: 1280 # Должно совпадать с video_size выше
+      height: 720 # Должно совпадать с video_size выше
+      fps: 5 # Frigate рекомендует не более 5-10 кадров для detection
+    objects:
+      track:
+        - person
+        - car
+    record:
+      enabled: true
+    mqtt:
+      enabled: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 270
+      quality: 80
+
+  # rtsp_camera_ptz:
+  #   ffmpeg:
+  #     inputs:
+  #       - path: rtsp://webcam2:PASSWORD@IP_ADDRESS:554/stream1
+  #         roles:
+  #           - record
+  #       - path: rtsp://webcam2:PASSWORD@IP_ADDRESS:554/stream2
+  #         roles:
+  #           - detect
+
+  #   detect:
+  #     enabled: true
+  #     width: 1280
+  #     height: 720
+  #     fps: 10
+  #   objects:
+  #     track:
+  #       - car
+  #   record:
+  #     enabled: true
+  #     continuous:
+  #       days: 3
+  #   onvif:
+  #     host: IP_ADDRESS
+  #     port: 2020
+  #     user: webcam2
+  #     password: PASSWORD
+  #   mqtt:
+  #     enabled: true
+  #     timestamp: true
+  #     bounding_box: true
+  #     crop: true
+  #     height: 270
+  #     quality: 80
+
+  # lpr_camera:
+  #   type: lpr
+  #   lpr:
+  #     enabled: True
+  #     enhancement: 3
+  #   ffmpeg:
+  #     inputs:
+  #       - path: rtsp://webcam2:PASSWORD@IP_ADDRESS:554/stream2
+  #         roles:
+  #           - detect
+  #       - path: rtsp://webcam2:PASSWORD@IP_ADDRESS:554/stream1
+  #         roles:
+  #           - record
+  #   detect:
+  #     enabled: False
+  #     width: 1280
+  #     height: 720
+  #     fps: 5
+  #   objects:
+  #     track: []
+  #   motion:
+  #     threshold: 30
+  #     contour_area: 60
+  #     improve_contrast: false
+  #   record:
+  #     enabled: True
+  #   review:
+  #     detections:
+  #       enabled: True
+  #   mqtt:
+  #     enabled: true
+  #     timestamp: true
+  #     bounding_box: true
+  #     crop: true
+  #     height: 270
+  #     quality: 80
+
+version: 0.17-0
