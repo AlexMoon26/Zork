@@ -81,7 +81,7 @@ TELEGRAM_CHAT_ID=id_чата_для_уведомлений
 docker-compose up -d
 ```
 
-###4. Настройте Frigate
+##4. Настройте Frigate
 Отредактируйте config/frigate/config.yml. Пример минимальной конфигурации с LPR:
 
 ```yaml
