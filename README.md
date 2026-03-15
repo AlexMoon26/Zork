@@ -44,6 +44,7 @@
 * **Frigate:** Python, OpenCV, TensorFlow Lite, Go2RTC.
 * **NestJS:** Node.js, TypeScript.
 * **MQTT‑брокер:** Mosquitto.
+* **ONVIF:** Библиотека onvif для управления PTZ-камерами.
 * **База данных:** SQLite/PostgreSQL (Frigate).
 * **Контейнеризация:** Docker, Docker Compose.
 
@@ -83,19 +84,40 @@ docker-compose up -d
 ```yaml
 mqtt:
   enabled: true
-  host: mosquitto
+  host: mqtt
   port: 1883
-  user: ваш_пользователь
-  password: ваш_пароль
+  user: ''
+  password: ''
+  topic_prefix: frigate
+
+lpr:
+  enabled: True
+
+objects:
+  track:
+    - person
+
+go2rtc:
+  streams:
+    cam1:
+      - rtsp://USERNAME:PASSWORD@IP_ADDRESS:554/stream1
+    cam1_sub:
+      - rtsp://USERNAME:PASSWORD@IP_ADDRESS:554/stream2
+    cam360:
+      - rtsp://USERNAME:PASSWORD@IP_ADDRESS:554/stream1
+    cam360_sub:
+      - rtsp://USERNAME:PASSWORD@IP_ADDRESS:554/stream2
 
 cameras:
-  driveway:
+  cam1:
     ffmpeg:
       inputs:
-        - path: rtsp://user:pass@ip:554/stream1
+        - path: rtsp://127.0.0.1:8554/cam1
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam1_sub
           roles:
             - detect
-            - record
     detect:
       enabled: true
       width: 1280
@@ -104,21 +126,53 @@ cameras:
     objects:
       track:
         - person
-        - car
-        - license_plate
-    lpr:
-      enabled: true
-      enhancement: 3
     record:
       enabled: true
-      retain:
+      continuous:
         days: 3
     mqtt:
       enabled: true
       timestamp: true
       bounding_box: true
       crop: true
+      height: 270
       quality: 80
+
+  cam360:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/cam360
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/cam360_sub
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 5
+    objects:
+      track:
+        - person
+    record:
+      enabled: true
+      continuous:
+        days: 3
+    onvif:
+      host: IP_ADDRESS
+      port: 2020
+      user: cam360
+      password: PASSWORD
+    mqtt:
+      enabled: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 270
+      quality: 80
+
+version: 0.17-0
 ```
 
 ## ⚙️ Параметры конфигурации
@@ -129,13 +183,12 @@ cameras:
 | :--- | :--- | :--- |
 | `TELEGRAM_BOT_TOKEN` | Токен бота | — |
 | `TELEGRAM_CHAT_ID` | ID чата для оповещений | — |
+| `FRIGATE_URL` | Путь сервера frigate:5000 | — |
+| `MQTT_BROKER_URL` | Путь сервера mqtt:1883 | — |
 
 ## 🔮 Планы на будущее
 
 - [ ] Интеграция с Home Assistant через MQTT auto‑discovery.
-- [ ] Поддержка нескольких каналов уведомлений (email, push).
-- [ ] Веб‑панель для просмотра последних событий.
-- [ ] Распознавание лиц.
 
 ## 📄 Лицензия
 
