@@ -65,7 +65,7 @@
 
 ### 1. Клонируйте репозиторий
 ```bash
-git clone --recursive [https://github.com/AlexMoon26/zork.git](https://github.com/AlexMoon26/zork.git)
+git clone --recursive https://github.com/AlexMoon26/zork.git
 cd zork
 ```
 
